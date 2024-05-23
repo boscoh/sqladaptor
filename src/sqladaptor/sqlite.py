@@ -24,13 +24,13 @@ class SqliteAdaptor:
     def execute(self, *args):
         return self.cursor.execute(*args)
 
-    def execute_to_df(self, sql, params=None):
+    def execute_to_df(self, sql: str, params=None):
         return pandas.read_sql_query(sql, self.conn, params=params)
 
     def commit(self):
         self.conn.commit()
 
-    def set_from_df(self, table, df, index=False, if_exists="append"):
+    def set_from_df(self, table: str, df: pandas.DataFrame, index=False, if_exists="append"):
         """
         :param df: pandas.Dataframe
         :param if_exists: ["fail", "append", "replace"]
@@ -38,14 +38,14 @@ class SqliteAdaptor:
         df.to_sql(con=self.conn, name=table, index=index, if_exists=if_exists)
         self.commit()
 
-    def replace_table_with_df(self, table, df, index=False):
+    def replace_table_with_df(self, table: str, df: pandas.DataFrame, index=False):
         self.set_from_df(table, df, index=index, if_exists="replace")
 
-    def add_column(self, name, col_type, table):
+    def add_column(self, table: str, name: str, col_type: str):
         self.execute(f"ALTER TABLE {table} ADD COLUMN '{name}' '{col_type}';")
         self.commit()
 
-    def get_columns(self, table):
+    def get_columns(self, table: str):
         queries = self.execute(f"PRAGMA table_info('{table}');").fetchall()
         return [r[1] for r in queries]
 
@@ -56,7 +56,7 @@ class SqliteAdaptor:
         rows = self.execute("SELECT name FROM sqlite_master;").fetchall()
         return [r[0] for r in rows]
 
-    def get_select_sql_and_params(self, table, where):
+    def get_select_sql_and_params(self, table: str, where: dict[str, [None, str, int, float]]):
         sql = f"SELECT * FROM {table} "
         params = []
         if where:
