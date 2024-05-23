@@ -1,28 +1,31 @@
-from sqladaptor.sqlite import SqliteAdaptor
 import pandas
+from path import Path
 from rich.pretty import pprint
+
+from sqladaptor.sqlite import SqliteAdaptor
 
 entries = [
     {"description": "this", "value": 1},
     {"description": "that", "value": 2}
 ]
 
-db =  SqliteAdaptor('db.sqlite')
+Path('db.sqlite').remove_p()
+db = SqliteAdaptor('db.sqlite')
+
 db.set_from_df('data1', pandas.DataFrame(entries))
 
-entries = db.get_list_of_dict('data1')
+entries = db.get_dict_list('data1')
 pprint(entries)
 
-
-entries = db.get_list_of_dict('data1', {"description": "this"})
+entries = db.get_dict_list('data1', {"description": "this"})
 pprint(entries)
-# [{'description': 'this', 'value': 1}]
 
 df = db.get_df("data1", {"value": 2})
 pprint(df)
-#   description  value
-# 0        this      1
 
 db.update("data1", {"value": 2}, {"description": "altered"})
-df = db.get_df("data1", {"value": 2})
-print(df)
+entries = db.get_dict_list('data1', {"value": 2})
+pprint(entries)
+
+rows = db.get_rows('data1')
+pprint(rows)

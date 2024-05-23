@@ -1,11 +1,8 @@
-import sys
-
+import pandas
 import pytest
 from path import Path
 from pydash import py_
-import pandas
 
-sys.path.append(Path(__file__).parent.parent / "src")
 from sqladaptor.sqlite import SqliteAdaptor
 
 
@@ -84,6 +81,6 @@ def test_get_list_of_dict(test_db):
         dict(description="dodo", amount=3),
     ]
     test_db.set_from_df("test_table", pandas.DataFrame(entries))
-    return_entries = test_db.get_list_of_dict("test_table")
+    return_entries = test_db.get_dict_list("test_table")
     for entry in return_entries:
         assert py_.find(return_entries, entry)

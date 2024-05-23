@@ -65,22 +65,22 @@ class SqliteAdaptor:
                 params.append(str(v))
         return sql, params
 
-    def get_rows(self, table, where=None):
+    def get_rows(self, table, where=None) -> [tuple]:
         sql, params = self.get_select_sql_and_params(table, where)
         return list(self.execute(sql, params))
 
-    def get_one_row(self, table, where=None):
+    def get_one_row(self, table, where=None) -> tuple:
         sql, params = self.get_select_sql_and_params(table, where)
         return self.execute(sql, params).fetchone()
 
-    def get_df(self, table, where=None):
+    def get_df(self, table, where=None) -> pandas.DataFrame:
         sql, params = self.get_select_sql_and_params(table, where)
         return pandas.read_sql_query(sql, self.conn, params=params)
 
-    def get_list_of_dict(self, table, where=None):
+    def get_dict_list(self, table, where=None) -> [dict]:
         return self.get_df(table, where).to_dict(orient="records")
 
-    def get_csv(self, table):
+    def get_csv(self, table) -> str:
         return self.get_df(table).to_csv(index=False)
 
     def insert(self, table, vals):

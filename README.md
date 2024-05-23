@@ -4,14 +4,17 @@ Transferring data, stored as JSON or Pandas, into an SQL database and back again
 
 ## Why?
 
-If you often build prototypes, then to start with,
-you will probably save your data in JSON files or Pandas parquet files.
-At some point, you will want to transition to a database where 
-updating/inserting data to disk would more efficient.
+Building protoytpes, you will often save your data as JSON or Pandas files.
+At some point though, you will want to transition to a database where
+updating/inserting data to disk is more efficient. 
 
-SqlAdaptor allows an easy transition to get started on such a database.
-This includes convenience functions to search the data using dicts, and 
-methods to return database rows in dicts for web-servers.
+SqlAdaptor allows an easy transition to such a database.
+This includes methods to search using dicts, and
+to return rows as dicts for web-servers. 
+
+This is possible
+because there is an equivalence between lists of JSON dicts, Pandas DataFrames
+and SQl tables - they are all tabular arrangements of columnar data.
 
 ## Installation
 
@@ -30,13 +33,13 @@ entries = [
     {"description": "that", "value": 2}
 ]
 
-db =  SqliteAdaptor('db.sqlite')
+db = SqliteAdaptor('db.sqlite')
 db.set_from_df('data1', pandas.DataFrame(entries))
 
-entries = db.get_list_of_dict('data1')
+entries = db.get_dict_list('data1')
 # [{'description': 'this', 'value': 1}, {'description': 'that', 'value': 2}]
 
-entries = db.get_list_of_dict('data1', {"description": "this"})
+entries = db.get_dict_list('data1', {"description": "this"})
 # [{'description': 'this', 'value': 1}]
 
 df = db.get_df("data1", {"value": 2})
@@ -44,7 +47,6 @@ df = db.get_df("data1", {"value": 2})
 # 0        that      2
 
 db.update("data1", {"value": 2}, {"description": "altered"})
-df = db.get_df("data1", {"value": 2})
-#   description  value
-# 0     altered      2
+entries = db.get_dict_list('data1', {"value": 2})
+[{'description': 'altered', 'value': 2}]
 ```
