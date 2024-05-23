@@ -13,7 +13,7 @@ This includes methods to search using dicts, and
 to return rows as dicts for web-servers. 
 
 This is possible
-because there is an equivalence between lists of JSON dicts, Pandas DataFrames
+because there is an equivalence between JSON dict lists, Pandas DataFrames
 and SQL tables - they are all tabular arrangements of columnar data.
 
 ## Installation
