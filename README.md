@@ -14,7 +14,7 @@ to return rows as dicts for web-servers.
 
 This is possible
 because there is an equivalence between lists of JSON dicts, Pandas DataFrames
-and SQl tables - they are all tabular arrangements of columnar data.
+and SQL tables - they are all tabular arrangements of columnar data.
 
 ## Installation
 
