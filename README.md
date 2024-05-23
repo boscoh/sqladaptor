@@ -4,7 +4,7 @@ Transferring data, stored as JSON or Pandas, into an SQL database and back again
 
 ## Why?
 
-Building protoytpes, you will often save your data as JSON or Pandas files.
+Building webserver protoytpes, you will often save your data as JSON or Pandas files.
 At some point though, you will want to transition to a database where
 updating/inserting data to disk is more efficient. 
 
