@@ -11,6 +11,9 @@ dependencies = [
     "pandas>=2.2.2",
     "pytest>=8.2.1",
     "rich>=13.7.1",
+    "fastjsonschema>=2.19.1",
+    "ruff>=0.4.5",
+    "ruff-lsp>=0.0.53",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
