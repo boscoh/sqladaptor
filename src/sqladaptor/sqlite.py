@@ -122,11 +122,11 @@ class SqliteAdaptor:
             lines = []
             for k, v in value_by_key.items():
                 if check_key_characters(k):
-                    lines.append(f"{k} = ?")
+                    lines.append(f"{k} = ? ")
                     params.append(str(v))
             if len(lines):
                 column_str = separator.join(lines)
-                sql += f"{head} {column_str}"
+                sql += f"{head} {column_str} "
         return sql, params
 
     def build_select_sql_and_params(self, table: str, where: OptionalValueDict):
@@ -195,7 +195,7 @@ class SqliteAdaptor:
                 vals, separator=", ", head="SET"
             )
             params.extend(set_params)
-            sql += set_sql
+            sql += set_sql + " "
         if where:
             where_sql, where_params = self.build_condition_sql_params(where)
             params.extend(where_params)
