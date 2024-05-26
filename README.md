@@ -36,20 +36,20 @@ entries = [
 db = SqliteAdaptor('db.sqlite')
 db.set_from_df('data1', pandas.DataFrame(entries))
 
-entries = db.get_dicts('data1')
+entries = db.read_dicts('data1')
 # [
 #   {'description': 'this', 'value': 1}, 
 #   {'description': 'that', 'value': 2}
 # ]
 
-return_entries = db.get_dicts('data1', {"description": "this"})
+return_entries = db.read_dicts('data1', {"description": "this"})
 # [{'description': 'this', 'value': 1}]
 
-df = db.get_df("data1", {"value": 2})
+df = db.read_df("data1", {"value": 2})
 #   description  value
 # 0        that      2
 
 db.update("data1", {"value": 2}, {"description": "altered"})
-return_entries2 = db.get_dicts('data1', {"value": 2})
+return_entries2 = db.read_dicts('data1', {"value": 2})
 # [{'description': 'altered', 'value': 2}]
 ```

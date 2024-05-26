@@ -37,43 +37,43 @@ def test_db():
 def test_get_schema(test_db):
     this_schema = deepcopy(schema)
     del this_schema["required"]
-    return_schmea = test_db.get_table_schema("test_table")
+    return_schmea = test_db.read_table_schema("test_table")
     assert return_schmea == this_schema
 
 
 def test_insert_row(test_db):
     entry = dict(description="haha", amount=2)
     test_db.insert("test_table", entry)
-    saved_entries = test_db.get_df("test_table").to_dict(orient="records")
+    saved_entries = test_db.read_df("test_table").to_dict(orient="records")
     assert py_.find(saved_entries, entry)
 
 
 def test_update_row(test_db):
     test_db.insert("test_table", dict(description="haha", amount=2))
 
-    entries = test_db.get_df("test_table").to_dict(orient="records")
+    entries = test_db.read_df("test_table").to_dict(orient="records")
     where = {"row_id": entries[0]["row_id"]}
 
     vals = {"category": "X"}
     test_db.update("test_table", where, vals)
 
-    entries = test_db.get_df("test_table").to_dict(orient="records")
+    entries = test_db.read_df("test_table").to_dict(orient="records")
     assert py_.find(entries, {**vals, **where})
 
 
 def test_delete_row(test_db):
     test_db.insert("test_table", dict(description="haha", amount=2))
-    entries = test_db.get_df("test_table").to_dict(orient="records")
+    entries = test_db.read_df("test_table").to_dict(orient="records")
     where = {"row_id": entries[0]["row_id"]}
     test_db.delete("test_table", where)
-    entries = test_db.get_df("test_table").to_dict(orient="records")
+    entries = test_db.read_df("test_table").to_dict(orient="records")
     assert not py_.find(entries, where)
 
 
 def test_get_rows(test_db):
     entry = dict(description="haha", amount=2)
     test_db.insert("test_table", entry)
-    rows = test_db.get_rows("test_table")
+    rows = test_db.read_rows("test_table")
     assert len(rows) == 1
     row = rows[0]
     for val in entry.values():
@@ -83,7 +83,7 @@ def test_get_rows(test_db):
 def test_get_one_row(test_db):
     entry = dict(description="haha", amount=2)
     test_db.insert("test_table", entry)
-    row = test_db.get_one_row("test_table")
+    row = test_db.read_one_row("test_table")
     for val in entry.values():
         assert val in row
 
@@ -94,7 +94,7 @@ def test_get_dicts(test_db):
         dict(description="dodo", amount=3),
     ]
     test_db.set_from_df("test_table", pandas.DataFrame(entries))
-    return_entries = test_db.get_dicts("test_table")
+    return_entries = test_db.read_dicts("test_table")
     for entry in return_entries:
         assert py_.find(return_entries, entry)
 
@@ -105,7 +105,7 @@ def test_get_one_dict(test_db):
         dict(description="dodo", amount=3),
     ]
     test_db.set_from_df("test_table", pandas.DataFrame(entries))
-    return_entry = test_db.get_one_dict("test_table")
+    return_entry = test_db.read_one_dict("test_table")
     is_found = False
     for entry in entries:
         if entry.items() < return_entry.items():

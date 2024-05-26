@@ -56,11 +56,11 @@ class SqliteAdaptor:
     def execute(self, *args):
         return self.cursor.execute(*args)
 
-    def get_tables(self):
+    def read_tables(self):
         rows = self.execute("SELECT name FROM sqlite_master").fetchall()
         return [r[0] for r in rows]
 
-    def get_table_schema(self, table: str) -> dict:
+    def read_table_schema(self, table: str) -> dict:
         queries = self.execute(f"PRAGMA table_info('{table}')").fetchall()
         props = {}
         for query in queries:
@@ -83,12 +83,12 @@ class SqliteAdaptor:
         self.commit()
 
     def drop_table(self, table: str):
-        if table in self.get_tables():
+        if table in self.read_tables():
             self.execute(f"DROP TABLE {table}")
             self.commit()
 
     def rename_table(self, table: str, new_table: str):
-        if table in self.get_tables():
+        if table in self.read_tables():
             new_table = py_.snake_case(new_table)
             self.execute(f"ALTER TABLE {table} RENAME to {new_table}")
             self.commit()
@@ -133,22 +133,22 @@ class SqliteAdaptor:
         where_sql, where_params = self.build_condition_sql_params(where)
         return f"SELECT * FROM {table} " + where_sql, where_params
 
-    def get_rows(self, table: str, where: OptionalValueDict = None) -> [tuple]:
+    def read_rows(self, table: str, where: OptionalValueDict = None) -> [tuple]:
         sql, params = self.build_select_sql_and_params(table, where)
         return list(self.execute(sql, params))
 
-    def get_one_row(self, table: str, where: OptionalValueDict = None) -> tuple:
+    def read_one_row(self, table: str, where: OptionalValueDict = None) -> tuple:
         sql, params = self.build_select_sql_and_params(table, where)
         return self.execute(sql, params).fetchone()
 
-    def get_df(self, table: str, where: OptionalValueDict = None) -> pandas.DataFrame:
+    def read_df(self, table: str, where: OptionalValueDict = None) -> pandas.DataFrame:
         sql, params = self.build_select_sql_and_params(table, where)
         return pandas.read_sql_query(sql, self.conn, params=params)
 
-    def get_dicts(self, table: str, where: OptionalValueDict = None) -> [dict]:
-        return self.get_df(table, where).to_dict(orient="records")
+    def read_dicts(self, table: str, where: OptionalValueDict = None) -> [dict]:
+        return self.read_df(table, where).to_dict(orient="records")
 
-    def get_one_dict(self, table: str, where: OptionalValueDict = None) -> dict:
+    def read_one_dict(self, table: str, where: OptionalValueDict = None) -> dict:
         sql, params = self.build_select_sql_and_params(table, where)
         df = pandas.read_sql_query(sql + " LIMIT 1", self.conn, params=params)
         entries = df.to_dict(orient="records")
@@ -157,8 +157,8 @@ class SqliteAdaptor:
         else:
             return {}
 
-    def get_csv(self, table: str) -> str:
-        return self.get_df(table).to_csv(index=False)
+    def read_csv(self, table: str) -> str:
+        return self.read_df(table).to_csv(index=False)
 
     def insert(self, table: str, vals):
         """

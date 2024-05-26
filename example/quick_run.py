@@ -14,26 +14,26 @@ entries = [
 ]
 db.set_from_df("data1", pandas.DataFrame(entries))
 
-entries = db.get_dicts("data1")
+entries = db.read_dicts("data1")
 pprint(entries)
 
-schema = db.get_table_schema("test_table")
+schema = db.read_table_schema("test_table")
 validator = fastjsonschema.compile(schema)
 for entry in entries:
     print("validate: ", end="")
     pprint(validator(entry))
 
-entries = db.get_dicts("data1", {"description": "this"})
+entries = db.read_dicts("data1", {"description": "this"})
 pprint(entries)
 
-df = db.get_df("data1", {"value": 2})
+df = db.read_df("data1", {"value": 2})
 pprint(df)
 
 db.update("data1", {"value": 2}, {"description": "altered"})
-entries = db.get_dicts("data1", {"value": 2})
+entries = db.read_dicts("data1", {"value": 2})
 pprint(entries)
 
-rows = db.get_rows("data1")
+rows = db.read_rows("data1")
 pprint(rows)
 
 schema = {
