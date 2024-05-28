@@ -127,8 +127,24 @@ class SqliteAdaptor:
             self.execute(f"ALTER TABLE {table} RENAME to {new_table}")
             self.commit()
 
-    def add_column(self, table: str, name: str, col_type: str):
-        self.execute(f"ALTER TABLE {table} ADD COLUMN '{name}' '{col_type}'")
+    def add_columns(self, table: str, schema: dict):
+        """
+        Adds columns described in a schema to a table.
+
+        :param table: str
+        :param schema: dict - e.g.
+        {
+            type: "object",
+            "properties": {
+                "column_text_a": { "type"; "string" }
+                "column_float_b": { "type"; "number" }
+            }
+        }
+        """
+        for name, props in schema["properties"].items():
+            if check_key_characters(name):
+                sqlite_type = sql_type_from_json_type[props["type"].lower()]
+                self.execute(f"ALTER TABLE {table} ADD '{name}' '{sqlite_type}'")
         self.commit()
 
     def execute_to_df(self, sql: str, params=None):
