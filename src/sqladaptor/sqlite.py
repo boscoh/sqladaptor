@@ -1,7 +1,7 @@
 import logging
 import re
 import sqlite3
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 
 import pandas
 from pydash import py_
@@ -116,6 +116,25 @@ class SqliteAdaptor:
         self.execute(f"CREATE TABLE IF NOT EXISTS {table} (\n{columns_sql}\n)\n")
         self.commit()
 
+    def add_columns(self, table: str, schema: dict):
+        """
+        Adds columns described in a schema to a table.
+
+        :param schema: dict - e.g.
+        {
+            type: "object",
+            "properties": {
+                "column_text_a": { "type": "string" }
+                "column_float_b": { "type": "number" }
+            }
+        }
+        """
+        for name, props in schema["properties"].items():
+            if check_key_characters(name):
+                sqlite_type = sql_type_from_json_type[props["type"].lower()]
+                self.execute(f"ALTER TABLE {table} ADD '{name}' '{sqlite_type}'")
+        self.commit()
+
     def drop_table(self, table: str):
         if table in self.read_tables():
             self.execute(f"DROP TABLE {table}")
@@ -127,35 +146,15 @@ class SqliteAdaptor:
             self.execute(f"ALTER TABLE {table} RENAME to {new_table}")
             self.commit()
 
-    def add_columns(self, table: str, schema: dict):
-        """
-        Adds columns described in a schema to a table.
-
-        :param table: str
-        :param schema: dict - e.g.
-        {
-            type: "object",
-            "properties": {
-                "column_text_a": { "type"; "string" }
-                "column_float_b": { "type"; "number" }
-            }
-        }
-        """
-        for name, props in schema["properties"].items():
-            if check_key_characters(name):
-                sqlite_type = sql_type_from_json_type[props["type"].lower()]
-                self.execute(f"ALTER TABLE {table} ADD '{name}' '{sqlite_type}'")
-        self.commit()
-
     def execute_to_df(self, sql: str, params=None):
         return pandas.read_sql_query(sql, self.conn, params=params)
 
     def set_from_df(
-        self, table: str, df: pandas.DataFrame, index=False, if_exists="append"
+            self, table: str, df: pandas.DataFrame, index=False,
+            if_exists: Literal["fail", "append", "replace"] = "append"
     ):
         """
         :param df: pandas.Dataframe
-        :param if_exists: ["fail", "append", "replace"]
         """
         df.to_sql(con=self.conn, name=table, index=index, if_exists=if_exists)
         self.commit()
@@ -164,7 +163,7 @@ class SqliteAdaptor:
         self.set_from_df(table, df, index=index, if_exists="replace")
 
     def build_condition_sql_and_params(
-        self, value_by_key: OptionalValueDict, head="WHERE", separator=" AND "
+            self, value_by_key: OptionalValueDict, head="WHERE", separator=" AND "
     ):
         sql = ""
         params = []
