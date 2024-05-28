@@ -1,6 +1,6 @@
 [project]
 name = "sqladaptor"
-version = "0.3"
+version = "0.4"
 description = "Starting adaptor for JSON/Pandas to SQL db"
 authors = [
     { name = "Bosco Ho", email = "apposite@gmail.com" }
