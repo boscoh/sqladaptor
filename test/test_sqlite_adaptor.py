@@ -7,6 +7,15 @@ from pydash import py_
 
 from sqladaptor.sqlite import SqliteAdaptor, var_name_regex
 
+
+def test_var_names():
+    assert var_name_regex.fullmatch("__ha__")
+    assert not var_name_regex.fullmatch("1__ha__")
+    assert not var_name_regex.fullmatch("__ ha__")
+    assert not var_name_regex.fullmatch("var#")
+    assert not var_name_regex.fullmatch("v;ar")
+
+
 schema = {
     "type": "object",
     "properties": {
@@ -38,7 +47,8 @@ def test_get_schema(test_db):
     this_schema = deepcopy(schema)
     del this_schema["required"]
     return_schmea = test_db.read_table_schema("test_table")
-    assert return_schmea == this_schema
+    del return_schmea["additionalProperties"]
+    assert this_schema == return_schmea
 
 
 def test_insert_row(test_db):
@@ -46,6 +56,34 @@ def test_insert_row(test_db):
     test_db.insert("test_table", entry)
     saved_entries = test_db.read_df("test_table").to_dict(orient="records")
     assert py_.find(saved_entries, entry)
+
+
+def test_insert_df(test_db):
+    entries = [
+        dict(description="haha", amount=2),
+        dict(description="hoho", amount=1),
+        dict(description="hihi", amount=3),
+    ]
+    test_db.set_from_df("test_table", pandas.DataFrame(entries))
+    saved_entries = test_db.read_df("test_table").to_dict(orient="records")
+    for entry in entries:
+        assert py_.find(saved_entries, entry)
+
+
+def test_fail_insert_too_big_df(test_db):
+    entries = [
+        dict(description="haha", amount=2, extra="bad"),
+        dict(description="hoho", amount=1, extra="bad"),
+        dict(description="hihi", amount=3, extra="bad"),
+    ]
+    with pytest.raises(Exception):
+        test_db.set_from_df("test_table", pandas.DataFrame(entries))
+
+
+def test_fail_when_insert_too_much(test_db):
+    entry = dict(description="haha", amount=2, extra_field="haha")
+    with pytest.raises(Exception):
+        test_db.insert("test_table", entry)
 
 
 def test_update_row(test_db):
@@ -113,9 +151,45 @@ def test_get_one_dict(test_db):
     assert is_found
 
 
-def test_var_names():
-    assert var_name_regex.fullmatch("__ha__")
-    assert not var_name_regex.fullmatch("1__ha__")
-    assert not var_name_regex.fullmatch("__ ha__")
-    assert not var_name_regex.fullmatch("var#")
-    assert not var_name_regex.fullmatch("v;ar")
+@pytest.fixture(scope="function")
+def empty_db():
+    db_fname = Path(__file__).parent / "test.sqlite3"
+    db_fname.remove_p()
+
+    db = SqliteAdaptor(db_fname)
+    db.commit()
+
+    yield db
+
+    db.close()
+    db_fname.remove_p()
+
+
+def test_build_table(empty_db):
+    first_schema = {
+        "type": "object",
+        "properties": {
+            "row_id": {"type": "integer"},
+            "description": {"type": "string"},
+        },
+        "required": ["row_id"],
+    }
+
+    second_schema = {
+        "type": "object",
+        "properties": {
+            "amount": {"type": "number"},
+            "category": {"type": "string"},
+        },
+    }
+
+    def col_names(schema):
+        return list(schema["properties"].keys())
+
+    empty_db.create_table("test_table", first_schema)
+    return_schema = empty_db.read_table_schema("test_table")
+    assert col_names(return_schema) == col_names(first_schema)
+
+    empty_db.add_columns("test_table", second_schema)
+    return_schema = empty_db.read_table_schema("test_table")
+    assert col_names(return_schema) == col_names(first_schema) + col_names(second_schema)

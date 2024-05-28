@@ -62,11 +62,8 @@ class SqliteAdaptor:
 
     def read_table_schema(self, table: str) -> dict:
         """
-        Reads the table schema as a json schema of
-        an object. AdditionalProperties are set to
-        False so that the json schema can be used
-        to validate if an incoming dict can be used
-        to update a table row.
+        Reads the table schema as a json schema of an object. AdditionalProperties
+        are set to False so that json-schema can be used to validate incoming dict.
 
         :param schema: dict - e.g. {
             "type": "object",
@@ -89,9 +86,8 @@ class SqliteAdaptor:
 
     def create_table(self, table: str, schema: dict):
         """
-        Creates table with json schema of an object
-        representing table keys. Required properties
-        are interpreted as primary keys.
+        Creates table with json schema of an object representing table keys.
+        Required properties are interpreted as primary keys.
 
         :param schema: dict - e.g. {
             "type": "object",
