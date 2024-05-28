@@ -53,3 +53,10 @@ db.update("data1", {"value": 2}, {"description": "altered"})
 return_entries2 = db.read_dicts('data1', {"value": 2})
 # [{'description': 'altered', 'value': 2}]
 ```
+
+## The API
+
+The key idea is to provide a JSON-like API for an SQL database. This will get provide
+a simple way of moving JSON lists into a database. With the API, JSON lists are easily
+returned. This is to simplify the transition of a good prototype into a production 
+database.

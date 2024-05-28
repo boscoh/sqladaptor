@@ -61,15 +61,49 @@ class SqliteAdaptor:
         return [r[0] for r in rows]
 
     def read_table_schema(self, table: str) -> dict:
+        """
+        Reads the table schema as a json schema of
+        an object. AdditionalProperties are set to
+        False so that the json schema can be used
+        to validate if an incoming dict can be used
+        to update a table row.
+
+        :param schema: dict - e.g. {
+            "type": "object",
+            "properties": {
+                "row_id": {"type": "integer"},
+                "description": {"type": "string"},
+                "amount": {"type": "number"},
+                "category": {"type": "string"},
+            },
+            "additionalProperties": False,
+        }
+        """
         queries = self.execute(f"PRAGMA table_info('{table}')").fetchall()
         props = {}
         for query in queries:
             name = query[1]
             data_type = json_type_from_sql_type[query[2]]
             props[name] = {"type": data_type}
-        return {"type": "object", "properties": props}
+        return {"type": "object", "properties": props, "additionalProperties": False}
 
     def create_table(self, table: str, schema: dict):
+        """
+        Creates table with json schema of an object
+        representing table keys. Required properties
+        are interpreted as primary keys.
+
+        :param schema: dict - e.g. {
+            "type": "object",
+            "properties": {
+                "row_id": {"type": "integer"},
+                "description": {"type": "string"},
+                "amount": {"type": "number"},
+                "category": {"type": "string"},
+            },
+            "required": ["row_id"],
+        }
+        """
         columns = []
         for col, props in schema["properties"].items():
             if check_key_characters(col):
@@ -113,7 +147,7 @@ class SqliteAdaptor:
     def replace_with_df(self, table: str, df: pandas.DataFrame, index=False):
         self.set_from_df(table, df, index=index, if_exists="replace")
 
-    def build_condition_sql_params(
+    def build_condition_sql_and_params(
         self, value_by_key: OptionalValueDict, head="WHERE", separator=" AND "
     ):
         sql = ""
@@ -130,7 +164,7 @@ class SqliteAdaptor:
         return sql, params
 
     def build_select_sql_and_params(self, table: str, where: OptionalValueDict):
-        where_sql, where_params = self.build_condition_sql_params(where)
+        where_sql, where_params = self.build_condition_sql_and_params(where)
         return f"SELECT * FROM {table} " + where_sql, where_params
 
     def read_rows(self, table: str, where: OptionalValueDict = None) -> [tuple]:
@@ -191,13 +225,13 @@ class SqliteAdaptor:
         sql = f"UPDATE {table} "
         params = []
         if vals:
-            set_sql, set_params = self.build_condition_sql_params(
+            set_sql, set_params = self.build_condition_sql_and_params(
                 vals, separator=", ", head="SET"
             )
             params.extend(set_params)
             sql += set_sql + " "
         if where:
-            where_sql, where_params = self.build_condition_sql_params(where)
+            where_sql, where_params = self.build_condition_sql_and_params(where)
             params.extend(where_params)
             sql += where_sql
         self.execute(sql, params)
@@ -208,6 +242,6 @@ class SqliteAdaptor:
         :param vals:
             <k>: <v>
         """
-        where_sql, params = self.build_condition_sql_params(where)
+        where_sql, params = self.build_condition_sql_and_params(where)
         self.execute(f"DELETE FROM {table} " + where_sql, params)
         self.commit()
