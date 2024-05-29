@@ -8,12 +8,11 @@ Building webserver prototypes, one often saves initial data as JSON or Pandas fi
 Later, you will want to transition to an SQL database where
 updating/inserting data to disk is more efficient. 
 
-SqlAdaptor allows an easy transition for this transition, using a
-familiar API consisting of dict lists and pandas dataframes. Table schema 
+SqlAdaptor allows an easy transition using a
+familiar API of JSON dicts and Pandas dataframes. Table schema 
 are treated as Json-Schema.
 
-This is possible
-because there is an equivalence between JSON dict lists, Pandas DataFrames
+This is possible because there is an equivalence between JSON dict lists, Pandas DataFrames
 and SQL tables - they are all tabular arrangements of columnar data.
 
 ## Installation
